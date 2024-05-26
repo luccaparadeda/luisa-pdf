@@ -17,6 +17,8 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { eden } from "@/lib/eden";
+import { useEffect, useState } from "react";
+import { Loader } from "lucide-react";
 
 const schema = z.object({
 	email: z
@@ -29,6 +31,21 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function SignUpForm() {
+	const [isSignedIn, setIsSignedIn] = useState(false);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const fetchIsSignedIn = async () => {
+			const { error } = await eden.api.validateCookie.get({
+				headers: {
+					Cookie: `auth=${document.cookie}`,
+				},
+			});
+			setIsSignedIn(error === null);
+			setLoading(false);
+		};
+		fetchIsSignedIn();
+	}, []);
 	const {
 		register,
 		handleSubmit,
@@ -44,7 +61,7 @@ export function SignUpForm() {
 	const onSubmit = async (data: FormValues) => {
 		const response = await eden.api.index.post(data);
 
-		if (response.status !== 200) {
+		if (response.status !== 201) {
 			toast({
 				title: "Erro ao cadastrar",
 				description: "Por favor, tente novamente mais tarde.",
@@ -60,72 +77,95 @@ export function SignUpForm() {
 		});
 		router.push("/visualizar-pdf");
 	};
+
+	if (loading) {
+		return (
+			<div className="w-full flex items-center justify-center">
+				<Loader className="w-10 h-10 animate-spin" />
+			</div>
+		);
+	}
 	return (
 		<Card className="max-w-sm">
 			<CardHeader>
-				<CardTitle className="text-xl">Cadastre-se</CardTitle>
+				<CardTitle className="text-xl">
+					{isSignedIn ? "Visualize o PDF" : "Cadastre-se"}
+				</CardTitle>
 				<CardDescription>
-					Insira suas informações para se cadastrar
+					{isSignedIn
+						? "Clique no botão abaixo"
+						: "Insira suas informações para se cadastrar"}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
-					<div className="grid grid-rows-2 gap-4">
+				{isSignedIn ? (
+					<div className="w-full flex items-center justify-center">
+						<Link href={"/visualizar-pdf"}>
+							<Button>CLIQUE PARA VISUALIZAR PDF</Button>
+						</Link>
+					</div>
+				) : (
+					<form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+						<div className="grid grid-rows-2 gap-4">
+							<div className="grid gap-2">
+								<Label htmlFor="first-name">Nome</Label>
+								<div className="grid gap-1">
+									<Input
+										id="first-name"
+										placeholder="Pedro"
+										{...register("name")}
+									/>
+									{errors.name?.message && (
+										<p className="text-red-500 text-xs min-h-2">
+											{errors.name?.message}
+										</p>
+									)}
+								</div>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="last-name">Sobrenome</Label>
+								<div className="grid gap-1">
+									<Input
+										id="last-name"
+										placeholder="Oliveira"
+										{...register("lastName")}
+									/>
+									{errors.lastName?.message && (
+										<p className="text-red-500 text-xs min-h-2">
+											{errors.lastName?.message}
+										</p>
+									)}
+								</div>
+							</div>
+						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="first-name">Nome</Label>
+							<Label htmlFor="email">Seu melhor Email*</Label>
 							<div className="grid gap-1">
 								<Input
-									id="first-name"
-									placeholder="Pedro"
-									{...register("name")}
+									id="email"
+									type="email"
+									placeholder="m@exemplo.com"
+									{...register("email")}
 								/>
-								{errors.name?.message && (
+								{errors.email?.message && (
 									<p className="text-red-500 text-xs min-h-2">
-										{errors.name?.message}
+										{errors.email?.message}
 									</p>
 								)}
 							</div>
 						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="last-name">Sobrenome</Label>
-							<div className="grid gap-1">
-								<Input
-									id="last-name"
-									placeholder="Oliveira"
-									{...register("lastName")}
-								/>
-								{errors.lastName?.message && (
-									<p className="text-red-500 text-xs min-h-2">
-										{errors.lastName?.message}
-									</p>
-								)}
-							</div>
-						</div>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="email">Email*</Label>
-						<div className="grid gap-1">
-							<Input
-								id="email"
-								type="email"
-								placeholder="m@exemplo.com"
-								{...register("email")}
-							/>
-							{errors.email?.message && (
-								<p className="text-red-500 text-xs min-h-2">
-									{errors.email?.message}
-								</p>
-							)}
-						</div>
-					</div>
-					<Button type="submit" className="w-full">
-						CADASTRE-SE
-					</Button>
-				</form>
+						<Button
+							type="submit"
+							className="w-full bg-green-500 hover:bg-green-400"
+						>
+							CADASTRE-SE
+						</Button>
+					</form>
+				)}
 				<div className="mt-4 text-center text-xs">
 					Não se preocupe, caso você já tenha feito cadastro anteriormente é só
 					inserir o seu melhor email novamente{" "}
-					<span className="text-primary">{"<3"}</span>
+					<span className="text-primary text-green-500">{"<3"}</span>
 				</div>
 			</CardContent>
 		</Card>
