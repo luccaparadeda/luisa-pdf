@@ -52,8 +52,8 @@ const app = new Elysia({ prefix: "/api" })
 	)
 	.post(
 		"/",
-		async ({ body, cookie: { auth }, jwt, set }) => {
-			console.log("cheguei");
+		async ({ body, cookie, jwt, set }) => {
+			console.log(cookie);
 			const user = await prisma.user.upsert({
 				where: {
 					email: body.email,
@@ -67,9 +67,9 @@ const app = new Elysia({ prefix: "/api" })
 			});
 
 			const token = await jwt.sign({ email: user.email });
-			auth.value = token;
-			auth.path = "/";
-			auth.httpOnly = true;
+			cookie.auth.value = token;
+			cookie.auth.path = "/";
+			cookie.auth.httpOnly = true;
 
 			console.log(await jwt.verify(token));
 
