@@ -36,11 +36,13 @@ export function SignUpForm() {
 
 	useEffect(() => {
 		const fetchIsSignedIn = async () => {
-			const { error } = await eden.api.validateCookie.get({
-				headers: {
-					Cookie: `auth=${document.cookie}`,
-				},
-			});
+			const token = localStorage.getItem("token");
+			if (!token) {
+				setIsSignedIn(false);
+				setLoading(false);
+				return;
+			}
+			const { error } = await eden.api.validateCookie({ token: token }).get();
 			setIsSignedIn(error === null);
 			setLoading(false);
 		};
@@ -60,8 +62,8 @@ export function SignUpForm() {
 
 	const onSubmit = async (data: FormValues) => {
 		const response = await eden.api.index.post(data);
-
-		if (response.status !== 201) {
+		console.log({ response });
+		if (response.error !== null) {
 			toast({
 				title: "Erro ao cadastrar",
 				description: "Por favor, tente novamente mais tarde.",
@@ -69,7 +71,8 @@ export function SignUpForm() {
 			});
 			return;
 		}
-
+		console.log(response.data);
+		localStorage.setItem("token", response.data as string);
 		toast({
 			title: "Cadastro realizado com sucesso",
 			description:

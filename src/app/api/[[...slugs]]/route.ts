@@ -2,13 +2,11 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { prisma } from "../../../../prisma/db";
-import { cookie } from "@elysiajs/cookie";
+
 const app = new Elysia({ prefix: "/api" })
-	.use(cookie())
 	.use(
 		jwt({
-			// biome-ignore lint/style/noNonNullAssertion: <explanation>
-			secret: "teste",
+			secret: process.env.JWT_SECRET ?? "",
 			name: "jwt",
 			schema: t.Object({ email: t.String({ format: "email" }) }),
 		}),
@@ -24,14 +22,10 @@ const app = new Elysia({ prefix: "/api" })
 		}
 	})
 	.get(
-		"/validateCookie",
-		async ({ jwt, cookie, error, set }) => {
-			console.log(cookie.auth.value);
-			const isValid = await jwt.verify(cookie.auth.value);
-
-			// console.log(cookie.auth);
-			// console.log(isValid);
-
+		"/validateCookie/:token",
+		async ({ error, set, params, jwt }) => {
+			const isValid = await jwt.verify(params.token);
+			console.log({ isValid });
 			if (!isValid) {
 				return error(401, "Você não está autenticado");
 			}
@@ -41,19 +35,18 @@ const app = new Elysia({ prefix: "/api" })
 			return `Você está autenticado com o email: ${email}`;
 		},
 		{
-			cookie: t.Cookie({
-				auth: t.String(),
-			}),
 			response: {
 				200: t.String(),
 				401: t.String(),
 			},
+			params: t.Object({
+				token: t.String(),
+			}),
 		},
 	)
 	.post(
 		"/",
-		async ({ body, cookie, jwt, set }) => {
-			console.log(cookie);
+		async ({ body, set, jwt }) => {
 			const user = await prisma.user.upsert({
 				where: {
 					email: body.email,
@@ -67,13 +60,9 @@ const app = new Elysia({ prefix: "/api" })
 			});
 
 			const token = await jwt.sign({ email: user.email });
-			cookie.auth.value = token;
-			cookie.auth.path = "/";
-			cookie.auth.httpOnly = true;
-
-			console.log(await jwt.verify(token));
 
 			set.status = 201;
+			return token;
 		},
 		{
 			body: t.Object({
@@ -81,9 +70,14 @@ const app = new Elysia({ prefix: "/api" })
 				lastName: t.Optional(t.String()),
 				email: t.String({ format: "email" }),
 			}),
+
+			response: {
+				201: t.String(),
+			},
 		},
 	);
 
 export const GET = app.handle;
 export const POST = app.handle;
+export const PUT = app.handle;
 export type App = typeof app;
