@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -21,18 +22,16 @@ const PdfFullscreen = ({ fileUrl }: PdfFullscreenProps) => {
 
 	return (
 		<Dialog
-			open={isOpen}
+			open={true}
 			onOpenChange={(v) => {
-				if (!v) {
-					setIsOpen(v);
-				}
+				history.back();
 			}}
 		>
-			<DialogTrigger onClick={() => setIsOpen(true)} asChild>
+			{/* <DialogTrigger onClick={() => setIsOpen(true)} asChild>
 				<Button variant="ghost" className="gap-1.5" aria-label="fullscreen">
 					<Expand className="h-4 w-4" />
 				</Button>
-			</DialogTrigger>
+			</DialogTrigger> */}
 			<DialogContent className="overflow-auto max-h-screen max-w-7xl w-[90vw]">
 				<div ref={ref}>
 					<Document

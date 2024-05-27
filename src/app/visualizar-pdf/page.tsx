@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import MyDocument from "@/components/pdf-document";
 import { eden } from "@/lib/eden";
 import { useRouter } from "next/navigation";
+import PdfFullscreen from "@/components/pdf-fullscreen";
 
 const App = () => {
 	const { back } = useRouter();
@@ -25,6 +26,7 @@ const App = () => {
 	return (
 		<main className="flex min-h-screen items-center justify-center min-w-full px-24 max-w-screen-xl">
 			<MyDocument url="/30-Dias-de-Conteuudo-por-Luisa-Oliveira.pdf" />
+			{/* <PdfFullscreen fileUrl="/30-Dias-de-Conteuudo-por-Luisa-Oliveira.pdf" /> */}
 		</main>
 	);
 };
