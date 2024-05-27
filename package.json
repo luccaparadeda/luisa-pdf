@@ -10,6 +10,7 @@
 		"postinstall": "prisma generate"
 	},
 	"dependencies": {
+		"@elysiajs/cookie": "^0.8.0",
 		"@elysiajs/eden": "^1.0.14",
 		"@elysiajs/jwt": "^1.0.2",
 		"@hookform/resolvers": "^3.4.2",

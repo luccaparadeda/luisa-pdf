@@ -2,9 +2,9 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { prisma } from "../../../../prisma/db";
-import { env } from "node:process";
-
+import { cookie } from "@elysiajs/cookie";
 const app = new Elysia({ prefix: "/api" })
+	.use(cookie())
 	.use(
 		jwt({
 			// biome-ignore lint/style/noNonNullAssertion: <explanation>
