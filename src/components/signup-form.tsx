@@ -165,9 +165,8 @@ export function SignUpForm() {
 						</Button>
 					</form>
 				)}
-				<div className="mt-4 text-center text-xs">
-					Não se preocupe, caso você já tenha feito cadastro anteriormente é só
-					inserir o seu melhor email novamente{" "}
+				<div className="mt-4 text-gray-700 text-center text-xs">
+					De acordo com a lei 12.965/2014 e 13.709/2018, autorizo Luísa a enviar comunicações por e-mail ou qualquer outro meio e concordo com sua política de privacidade.
 					<span className="text-primary text-green-500">{"<3"}</span>
 				</div>
 			</CardContent>
